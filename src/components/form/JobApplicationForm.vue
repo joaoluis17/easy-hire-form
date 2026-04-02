@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DarkModeToggle from '../DarkModeToggle.vue'
 import { ref } from 'vue'
 import { formConfig } from '../../config/formConfig'
 
@@ -60,10 +61,22 @@ async function handleSubmit() {
 
 <template>
   <section class="rounded-2xl bg-white p-6 shadow-lg">
-    <h1 class="mb-2 text-2xl font-bold text-slate-800">Trabalhe Conosco</h1>
-    <p class="mb-6 text-sm text-slate-500">
-      Preencha o formulário para enviar sua candidatura.
-    </p>
+    <div class="mb-6 flex items-start">
+      <div class="w-10"></div>
+
+      <div class="flex-1 text-center">
+        <h1 class="text-2xl font-bold text-slate-800">
+          Trabalhe Conosco
+        </h1>
+        <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+          Preencha o formulário para enviar sua candidatura.
+        </p>
+      </div>
+
+      <div class="flex w-10 justify-end">
+        <DarkModeToggle />
+      </div>
+    </div>
 
     <form class="space-y-4" @submit.prevent="handleSubmit">
       <input v-model="name" type="text" placeholder="Nome completo" class="w-full rounded-lg border p-3" />
@@ -86,7 +99,7 @@ async function handleSubmit() {
       <button
         type="submit"
         :disabled="loading"
-        class="w-full rounded-lg bg-slate-900 px-4 py-3 text-white disabled:opacity-50"
+        class="w-full rounded-lg bg-slate-900 px-4 py-3 text-white disabled:opacity-50 cursor-pointer"
       >
         {{ loading ? 'Enviando...' : 'Enviar candidatura' }}
       </button>
