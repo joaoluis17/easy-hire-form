@@ -3,16 +3,19 @@ export interface JobApplicationData {
   email: string
   phone: string
   area: string
+  craft: string
   linkedin?: string
   portfolio?: string
   message?: string
   resume: File | null
 }
 
+// types/form.ts — adicione o novo tipo
 export interface FormConfig {
   companyName: string
   apiUrl: string
   areas: string[]
+  craftsByArea: Record<string, string[]>  // <- substituir crafts: string[]
   fields: {
     linkedin: boolean
     portfolio: boolean
