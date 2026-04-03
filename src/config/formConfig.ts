@@ -3,7 +3,7 @@ import type { FormConfig } from '../types/form'
 // config/formConfig.ts
 export const formConfig: FormConfig = {
   companyName: 'Easy Hire',
-  apiUrl: 'https://sua-api-aqui.com/apply',
+  apiUrl: import.meta.env.VITE_FORM_API_URL || '/api/apply',
   areas: [
     'Tecnologia',
     'Design',

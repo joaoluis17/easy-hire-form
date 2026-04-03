@@ -88,6 +88,34 @@ As principais configurações ficam no arquivo:
 src/config/formConfig.ts
 ```
 
+### API local para desenvolvimento
+
+Ao rodar `npm run dev`, o projeto expÃµe uma API local em:
+
+```bash
+/api/apply
+```
+
+Essa API:
+
+* Recebe o envio do formulÃ¡rio localmente
+* Salva os dados da candidatura em `.easy-hire/submissions/`
+* Salva o currÃ­culo junto com um arquivo `submission.json`
+
+### Como trocar pela API da empresa
+
+Por padrÃ£o, o projeto usa:
+
+```ts
+import.meta.env.VITE_FORM_API_URL || '/api/apply'
+```
+
+Para produÃ§Ã£o, basta definir:
+
+```bash
+VITE_FORM_API_URL=https://api-da-empresa.com/apply
+```
+
 ---
 
 ## 🎯 Possíveis usos
