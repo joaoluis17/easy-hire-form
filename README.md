@@ -1,162 +1,107 @@
 # Easy Hire Form
 
-Um formulário simples, moderno e reutilizável de **"Trabalhe Conosco"** para empresas integrarem facilmente em seus sites.
+Formulário reutilizável de "Trabalhe Conosco" com Vue 3, TypeScript, Tailwind e API local para desenvolvimento.
 
----
+## Visão geral
 
-## 💡 Sobre o projeto
+O projeto foi estruturado para atender dois cenários:
 
-O **Easy Hire Form** foi criado com o objetivo de resolver um problema comum:
-formulários de candidatura longos, confusos e difíceis de preencher.
+- desenvolvimento local com uma API funcional embutida no ambiente Vite
+- customização por empresas que depois vão apontar o formulário para a própria API em produção
 
-A proposta é oferecer uma solução:
+## Tecnologias
 
-* Simples
-* Rápida de integrar
-* Fácil de customizar
-* Com boa experiência para o usuário
+- Vue 3
+- TypeScript
+- Tailwind CSS
+- Vite
 
-Este projeto pode ser utilizado por qualquer empresa que deseje implementar um formulário de candidatura eficiente, sem precisar desenvolver tudo do zero.
+## Como rodar localmente
 
----
-
-## 🛠️ Tecnologias utilizadas
-
-* Vue 3
-* TypeScript
-* Tailwind CSS
-* Vite
-
----
-
-## 📦 Como rodar o projeto localmente
-
-### 1. Clone o repositório
-
-```bash
-git clone https://github.com/joaoluis17/easy-hire-form.git
-```
-
----
-
-### 2. Acesse a pasta do projeto
-
-```bash
-cd easy-hire-form
-```
-
----
-
-### 3. Instale as dependências
+1. Instale as dependências:
 
 ```bash
 npm install
 ```
 
----
-
-### 4. Execute o projeto
+2. Execute o projeto:
 
 ```bash
 npm run dev
 ```
 
----
-
-### 5. Acesse no navegador
+3. Acesse:
 
 ```bash
 http://localhost:5173
 ```
 
----
+## API local de desenvolvimento
 
-## ⚙️ Como utilizar no seu projeto
-
-O formulário foi desenvolvido para ser facilmente adaptável.
-
-Você pode:
-
-* Alterar as áreas de atuação
-* Configurar a API de envio dos dados
-* Definir quais campos devem aparecer
-* Personalizar estilos com Tailwind
-
-As principais configurações ficam no arquivo:
-
-```
-src/config/formConfig.ts
-```
-
-### API local para desenvolvimento
-
-Ao rodar `npm run dev`, o projeto expÃµe uma API local em:
+Quando o projeto roda com `npm run dev`, a API local fica disponível em:
 
 ```bash
 /api/apply
 ```
 
-Essa API:
+Os envios são salvos em:
 
-* Recebe o envio do formulÃ¡rio localmente
-* Salva os dados da candidatura em `.easy-hire/submissions/`
-* Salva o currÃ­culo junto com um arquivo `submission.json`
+```bash
+.easy-hire/submissions/
+```
 
-### Como trocar pela API da empresa
+Cada candidatura gera:
 
-Por padrÃ£o, o projeto usa:
+- um `submission.json` com os dados recebidos
+- o arquivo do currículo, quando enviado
+
+## Como trocar a API em produção
+
+Por padrão, o frontend usa:
 
 ```ts
 import.meta.env.VITE_FORM_API_URL || '/api/apply'
 ```
 
-Para produÃ§Ã£o, basta definir:
+Para usar a API real da empresa, defina a variável:
 
 ```bash
 VITE_FORM_API_URL=https://api-da-empresa.com/apply
 ```
 
----
+## Estrutura principal
 
-## 🎯 Possíveis usos
+```text
+src/
+  components/
+    form/
+      Form.vue
+      MultiSelectField.vue
+      ResumeUploadField.vue
+  composables/
+    usePhoneField.ts
+  config/
+    formDefinition.ts
+    formConfig.ts
+  shared/
+    formValidation.ts
+  types/
+    form.ts
 
-* Página "Trabalhe Conosco"
-* Landing pages de recrutamento
-* Sites institucionais
-* Startups que precisam de uma solução rápida
-* Projetos internos de RH
+server/
+  localFormApi.ts
+```
 
----
+## O que já está organizado
 
-## 📈 Objetivo
+- validação compartilhada entre frontend e API local
+- multiselect pesquisável para áreas e funções
+- upload de currículo com componente próprio
+- máscara de telefone isolada em composable
+- configuração centralizada para campos, áreas e funções
 
-Além de ser uma solução prática, este projeto também demonstra:
+## Próximos passos sugeridos
 
-* Boas práticas de front-end
-* Componentização com Vue
-* Uso de TypeScript
-* Estrutura escalável
-* Pensamento orientado a produto
-
----
-
-## 🤝 Contribuição
-
-Sinta-se à vontade para contribuir, sugerir melhorias ou adaptar o projeto para suas necessidades.
-
----
-
-## 📩 Contato
-
-Caso queira um formulário específico ou qualquer solução personalizada para sua empresa ou site, entre em contato comigo.
-
----
-
-## Onde me encontrar
-
-[![Website](https://img.shields.io/badge/Website-000000?style=for-the-badge&logo=About.me&logoColor=white)](https://joao-luis-prado.netlify.app/)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/joao-luis-prado)
-[![X](https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://x.com/JohnPrado1728)
-[![Instagram](https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/o_john_prado/)
-[![Outlook](https://img.shields.io/badge/Outlook-0078D4?style=for-the-badge&logo=microsoft-outlook&logoColor=white)](mailto:jluispprado@hotmail.com)
-[![WhatsApp](https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://wa.me/5511998962261)
+- adicionar testes automatizados
+- criar um painel local para listar candidaturas salvas
+- permitir integração com serviços externos de RH

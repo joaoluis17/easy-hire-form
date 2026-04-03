@@ -2,6 +2,12 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
+import { formDefinition } from '../src/config/formDefinition'
+import {
+  type SubmissionFieldErrors,
+  validateSubmission,
+} from '../src/shared/formValidation'
+import type { UploadedResume } from '../src/types/form'
 
 const LOCAL_API_PATH = '/api/apply'
 const SUBMISSIONS_DIR = path.resolve(process.cwd(), '.easy-hire', 'submissions')
@@ -64,55 +70,103 @@ async function parseMultipartForm(request: IncomingMessage) {
   return formRequest.formData()
 }
 
-async function storeSubmission(formData: FormData) {
+function getResumeMetadata(resumeEntry: unknown): UploadedResume | null {
+  if (!(resumeEntry instanceof File) || resumeEntry.size === 0) {
+    return null
+  }
+
+  return {
+    name: resumeEntry.name,
+    size: resumeEntry.size,
+    type: resumeEntry.type,
+  }
+}
+
+function parseSubmission(formData: FormData) {
+  const resumeEntry = formData.get('resume')
+
+  return {
+    name: String(formData.get('name') ?? '').trim(),
+    email: String(formData.get('email') ?? '').trim(),
+    phoneCountry: String(formData.get('phoneCountry') ?? ''),
+    phone: String(formData.get('phone') ?? ''),
+    phoneDigits: String(formData.get('phoneDigits') ?? ''),
+    areas: parseStringArray(formData.get('areas')),
+    crafts: parseStringArray(formData.get('crafts')),
+    linkedin: String(formData.get('linkedin') ?? '').trim(),
+    portfolio: String(formData.get('portfolio') ?? '').trim(),
+    message: String(formData.get('message') ?? '').trim(),
+    resume: getResumeMetadata(resumeEntry),
+    resumeEntry,
+  }
+}
+
+async function storeSubmission(submission: ReturnType<typeof parseSubmission>) {
   const submissionId = `submission-${Date.now()}`
   const receivedAt = new Date().toISOString()
   const submissionDir = path.join(SUBMISSIONS_DIR, submissionId)
 
   await mkdir(submissionDir, { recursive: true })
 
-  const resumeEntry = formData.get('resume')
   let storedResume: StoredSubmission['resume']
 
-  if (resumeEntry instanceof File && resumeEntry.size > 0) {
-    const storedName = `${Date.now()}-${sanitizeFileName(resumeEntry.name)}`
+  if (submission.resumeEntry instanceof File && submission.resumeEntry.size > 0) {
+    const storedName = `${Date.now()}-${sanitizeFileName(submission.resumeEntry.name)}`
     const resumePath = path.join(submissionDir, storedName)
-    const resumeBuffer = Buffer.from(await resumeEntry.arrayBuffer())
+    const resumeBuffer = Buffer.from(await submission.resumeEntry.arrayBuffer())
 
     await writeFile(resumePath, resumeBuffer)
 
     storedResume = {
-      originalName: resumeEntry.name,
+      originalName: submission.resumeEntry.name,
       storedName,
-      mimeType: resumeEntry.type,
-      size: resumeEntry.size,
+      mimeType: submission.resumeEntry.type,
+      size: submission.resumeEntry.size,
       path: resumePath,
     }
   }
 
-  const submission: StoredSubmission = {
+  const storedSubmission: StoredSubmission = {
     id: submissionId,
     receivedAt,
-    name: String(formData.get('name') ?? ''),
-    email: String(formData.get('email') ?? ''),
-    phoneCountry: String(formData.get('phoneCountry') ?? ''),
-    phone: String(formData.get('phone') ?? ''),
-    phoneDigits: String(formData.get('phoneDigits') ?? ''),
-    areas: parseStringArray(formData.get('areas')),
-    crafts: parseStringArray(formData.get('crafts')),
-    linkedin: String(formData.get('linkedin') ?? ''),
-    portfolio: String(formData.get('portfolio') ?? ''),
-    message: String(formData.get('message') ?? ''),
+    name: submission.name,
+    email: submission.email,
+    phoneCountry: submission.phoneCountry,
+    phone: submission.phone,
+    phoneDigits: submission.phoneDigits,
+    areas: submission.areas,
+    crafts: submission.crafts,
+    linkedin: submission.linkedin,
+    portfolio: submission.portfolio,
+    message: submission.message,
     resume: storedResume,
   }
 
   await writeFile(
     path.join(submissionDir, 'submission.json'),
-    JSON.stringify(submission, null, 2),
+    JSON.stringify(storedSubmission, null, 2),
     'utf-8',
   )
 
-  return submission
+  return storedSubmission
+}
+
+function validateServerSubmission(submission: ReturnType<typeof parseSubmission>) {
+  return validateSubmission(
+    {
+      name: submission.name,
+      email: submission.email,
+      phone: submission.phone,
+      phoneDigits: submission.phoneDigits,
+      areas: submission.areas,
+      crafts: submission.crafts,
+      linkedin: submission.linkedin,
+      portfolio: submission.portfolio,
+      message: submission.message,
+      resume: submission.resume,
+    },
+    formDefinition.fields,
+  )
 }
 
 async function handleLocalFormApi(request: IncomingMessage, response: ServerResponse) {
@@ -126,19 +180,31 @@ async function handleLocalFormApi(request: IncomingMessage, response: ServerResp
 
   try {
     const formData = await parseMultipartForm(request)
-    const submission = await storeSubmission(formData)
+    const submission = parseSubmission(formData)
+    const validationResult = validateServerSubmission(submission)
+
+    if (!validationResult.isValid) {
+      sendJson(response, 400, {
+        ok: false,
+        message: 'Validation failed.',
+        errors: validationResult.errors satisfies SubmissionFieldErrors,
+      })
+      return
+    }
+
+    const storedSubmission = await storeSubmission(submission)
 
     sendJson(response, 200, {
       ok: true,
-      submissionId: submission.id,
-      message: 'Application stored locally.',
+      submissionId: storedSubmission.id,
+      message: 'Candidatura salva localmente com sucesso.',
     })
   } catch (error) {
     console.error('Local form API failed:', error)
 
     sendJson(response, 500, {
       ok: false,
-      message: 'Failed to process local application.',
+      message: 'Não foi possível processar a candidatura local.',
     })
   }
 }
