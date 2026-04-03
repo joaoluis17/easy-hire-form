@@ -2,8 +2,8 @@ export interface JobApplicationData {
   name: string
   email: string
   phone: string
-  area: string
-  craft: string
+  areas: string[]
+  crafts: string[]
   linkedin?: string
   portfolio?: string
   message?: string
@@ -15,7 +15,7 @@ export interface FormConfig {
   companyName: string
   apiUrl: string
   areas: string[]
-  craftsByArea: Record<string, string[]>  // <- substituir crafts: string[]
+  craftsByArea: Record<string, string[]>
   fields: {
     linkedin: boolean
     portfolio: boolean
